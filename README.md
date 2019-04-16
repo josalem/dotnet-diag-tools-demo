@@ -19,8 +19,8 @@ Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1'-OutFile 'dotnet-inst
 
 For Mac/Linux:
 ```bash
-curl https://dot.net/v1/dotnet-install.sh && chmod +x dotnet-install.sh
-./dotnet-install.sh -InstallDir '.dotnet-test' -Channel master
+curl https://dot.net/v1/dotnet-install.sh > dotnet-install.sh && chmod +x dotnet-install.sh
+source ./dotnet-install.sh -InstallDir '.dotnet-test' -Channel master
 ```
 
 Subsequently, you should be able to run the following to start the server:
