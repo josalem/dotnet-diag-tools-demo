@@ -13,15 +13,18 @@ From the root of the demo app's source tree run the applicable snippet:
 
 For Windows:
 ```powershell
-Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1'-OutFile 'dotnet-install.ps1';
-./dotnet-install.ps1 -InstallDir '.dotnet-test' -Channel master;
+Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile 'dotnet-install.ps1';
+./dotnet-install.ps1 -InstallDir '.dotnet-test' -Channel master -v '3.0.100-preview5-011250';
 ```
 
 For Mac/Linux:
 ```bash
 curl https://dot.net/v1/dotnet-install.sh > dotnet-install.sh && chmod +x dotnet-install.sh
-source ./dotnet-install.sh -InstallDir '.dotnet-test' -Channel master
+source ./dotnet-install.sh -InstallDir '.dotnet-test' -Channel master -v '3.0.100-preview5-011250'
 ```
+
+> specifying `-v '3.0.100-preview5-011250'` is a workaround for some breaking changes from AspNetCore;
+> should be solved in upcoming builds.
 
 Subsequently, you should be able to run the following to start the server:
 ```bash
