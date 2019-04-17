@@ -22,12 +22,11 @@ namespace TraceApi.Controllers
 
         // GET api/trace/gcstress
         [HttpGet("gcstress")]
-        public async Task<ActionResult<string>> GetGcStress()
+        public ActionResult<string> GetGcStress()
         {
-            await RunLambdaUntil((token) =>
+            RunLambdaUntil((token) =>
             {
-                string str = "";
-                while (!token.IsCancellationRequested) str += "Str";
+                while (!token.IsCancellationRequested) GC.Collect();
             }, new TimeSpan(0,0,5));
 
             return "looping string concatenation creates GC stress";
@@ -35,33 +34,38 @@ namespace TraceApi.Controllers
 
         // GET api/trace/eventsource
         [HttpGet("eventsource")]
-        public async Task<ActionResult<string>> GetEventSource()
+        public ActionResult<string> GetEventSource()
         {
-            await RunLambdaUntil((token) =>
-            {
-                while (!token.IsCancellationRequested) MyEventSource.Log.SomethingHappened();
-            }, new TimeSpan(0,0,5));
+            // await RunLambdaUntil((token) =>
+            // {
+            //     while (!token.IsCancellationRequested) MyEventSource.Log.SomethingHappened();
+            // }, new TimeSpan(0,0,5));
 
-            return "looping over MyEventSource" ;
+            var n = RecurUntil(() => MyEventSource.Log.SomethingHappened(), new TimeSpan(0,0,5));
+
+            return $"Recurred over MyEventSource {n} times" ;
         }
 
         // GET api/trace/eventsource/{msg}
         [HttpGet("eventsource/{msg}")]
-        public async Task<ActionResult<string>> GetEventSource(string msg)
+        public ActionResult<string> GetEventSource(string msg)
         {
-            await RunLambdaUntil((token) =>
-            {
-                while (!token.IsCancellationRequested) MyEventSource.Log.SomethingElseHappened(msg);
-            }, new TimeSpan(0,0,5));
+            // RunLambdaUntil((token) =>
+            // {
+            //     while (!token.IsCancellationRequested) MyEventSource.Log.SomethingElseHappened(msg);
+            // }, new TimeSpan(0,0,5));
 
-            return "looping over MyEventSource with custom msg" ;
+            var n = RecurUntil(() => MyEventSource.Log.SomethingElseHappened(msg), new TimeSpan(0,0,5));
+
+
+            return $"Recurred over MyEventSource with custom msg {n} times";
         }
 
         // GET api/trace/cpustress
         [HttpGet("cpustress")]
-        public async Task<ActionResult<string>> GetCpuStress()
+        public ActionResult<string> GetCpuStress()
         {
-            await RunLambdaUntil((token) =>
+            RunLambdaUntil((token) =>
             {
                 var foo = 0;
                 while (!token.IsCancellationRequested) foo++;
@@ -70,10 +74,25 @@ namespace TraceApi.Controllers
             return "looping int summation to induce a little CPU strain";
         }
 
-        private async Task RunLambdaUntil(Action<CancellationToken> lambda, TimeSpan delay)
+        private void RunLambdaUntil(Action<CancellationToken> lambda, TimeSpan delay)
         {
             var cts = new CancellationTokenSource(delay);
-            await Task.Run(() => lambda(cts.Token), cts.Token);
+            lambda(cts.Token);
+        }
+
+        private int Recur(CancellationToken ct, Action action, int acc = 0)
+        {
+            action();
+            System.Threading.Thread.Sleep(500);
+            if (ct.IsCancellationRequested)
+                return acc;
+            return Recur(ct, action, acc) + 1;
+        }
+
+        private int RecurUntil(Action action, TimeSpan delay)
+        {
+            var cts = new CancellationTokenSource(delay);
+            return Recur(cts.Token, action);
         }
     }
 }
