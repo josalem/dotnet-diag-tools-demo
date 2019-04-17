@@ -55,6 +55,8 @@ Windows (powershell):
 Invoke-WebRequest https://localhost:5001/api/trace/eventsource
 ```
 
+> On Windows you may need to run `dotnet dev-certs https --trust` if you see certificate errors.
+
 6) In terminal 2, hit `Enter` or `Ctrl-c` to stop the trace.  If things went well, you should see something like this:
 ```bash
 > dotnet run --no-restore --no-build -- collect -pid 27108 --providers MyEventSource,Microsoft-DotNETCore-SampleProfiler
