@@ -14,17 +14,14 @@ From the root of the demo app's source tree run the applicable snippet:
 For Windows:
 ```powershell
 Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile 'dotnet-install.ps1';
-./dotnet-install.ps1 -InstallDir '.dotnet-test' -Channel master -v '3.0.100-preview5-011250';
+./dotnet-install.ps1 -InstallDir '.dotnet-test' -Channel master;
 ```
 
 For Mac/Linux:
 ```bash
 curl https://dot.net/v1/dotnet-install.sh > dotnet-install.sh && chmod +x dotnet-install.sh
-source ./dotnet-install.sh -InstallDir '.dotnet-test' -Channel master -v '3.0.100-preview5-011250'
+source ./dotnet-install.sh -InstallDir '.dotnet-test' -Channel master
 ```
-
-> specifying `-v '3.0.100-preview5-011250'` is a workaround for some breaking changes from AspNetCore;
-> should be solved in upcoming builds.
 
 Subsequently, you should be able to run the following to start the server:
 ```bash
@@ -41,8 +38,8 @@ dotnet run
 
 1) In one terminal (Terminal 1), run the demo app (`dotnet run` in the project directory of the demo app) and note down what port the app is listening for https traffic on.  Typically it is 5001, e.g., https://localhost:5001
 2) In another terminal (Terminal 2), navigate to `.../diagnostics/src/Tools/dotnet-trace`
-3) In the dotnet-trace directory, run `dotnet run --no-build --no-restore -- ports`.  This will display a list of all available ports for the tool to listen on.  Find the port of the dotnet that is running the `TraceApi` demo app and note down its process ID.
-4) In the dotnet-trace directory, run `dotnet run --no-build --no-restore -- collect -pid <pid from step 3> --providers MyEventSource,Microsoft-DotNETCore-SampleProfiler`
+3) In the dotnet-trace directory, run `dotnet run --no-build --no-restore -- endpoints`.  This will display a list of all available endpoints for the tool to listen on.  Find the endpoint of the dotnet instance that is running the `TraceApi` demo app and note its process ID.
+4) In the dotnet-trace directory, run `dotnet run --no-build --no-restore -- collect -p <pid from step 3> --providers MyEventSource,Microsoft-DotNETCore-SampleProfiler`
 5) In a _third_ terminal (Terminal 3), make calls to the following endpoints: `/api/trace/eventsource`, `/api/trace/eventsource/mymsg`, `/api/trace/gcstress`, `/api/trace/cpustress`.  Refer to the following snippets for examples of making the requests:
 
 Mac/Linux:
@@ -59,7 +56,7 @@ Invoke-WebRequest https://localhost:5001/api/trace/eventsource
 
 6) In terminal 2, hit `Enter` or `Ctrl-c` to stop the trace.  If things went well, you should see something like this:
 ```bash
-> dotnet run --no-restore --no-build -- collect -pid 27108 --providers MyEventSource,Microsoft-DotNETCore-SampleProfiler
+> dotnet run --no-restore --no-build -- collect -p 27108 --providers MyEventSource,Microsoft-DotNETCore-SampleProfiler
 press <Enter> or <Ctrl-c> to exit...
 Recording tracing session to: C:\git\diagnostics\src\Tools\dotnet-trace\eventpipe-20190415_165102.netperf
   Session Id: 0x00000280C2855990
@@ -68,7 +65,7 @@ Trace completed.
 ```
 > If you see a message about being unable to read past the end of the stream, then the version of CoreCLR that the SDK you pulled down earlier may not be new enough.  In that case, please follow the alternative instructions at the end of this document.
 
-7) You should be able to open the created trace files in PerfView (install from https://github.com/Microsoft/PerfView)
+7) On Windows the default output format is `netperf` which you can open in PerfView (install from https://github.com/Microsoft/PerfView).  On other platforms, the default format is `speedscope` which can be opened at https://www.speedscope.app (note: the `netperf` file is also created).  You can specify a desired format using the `-f|--format` option on the `collect` sub-command.
 
 # Alternative CoreCLR Instructions
 
